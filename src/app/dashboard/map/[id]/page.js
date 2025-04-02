@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import MapView from "@/components/map/mapview"
 import { useAuth } from "@/contexts/AuthContext"
+import { fetchWithAuth } from "@/lib/apiService"
 
 export default function Page() {
-  // Properly get params using Next.js hook
+  // Get route ID from URL params
   const params = useParams()
   const id = params.id
   
@@ -16,26 +17,26 @@ export default function Page() {
   const [error, setError] = useState(null)
   
   useEffect(() => {
-    if (id) {
-      // Get route data from sessionStorage
-      const storedRoute = sessionStorage.getItem(`route_${id}`);
-      if (storedRoute) {
+    async function fetchData() {
+      if (id) {
+        setIsLoading(true);
         try {
-          setRouteData(JSON.parse(storedRoute));
-          sessionStorage.removeItem(`route_${id}`);
+          const rawResponse = await fetchWithAuth(`/api/routing/${id}`, getAccessToken);
+          console.log("raw res",rawResponse)
+          setRouteData(rawResponse);
         } catch (err) {
-          setError("Failed to parse route data");
+         
+          setError(err.toString()
+          );
         } finally {
           setIsLoading(false);
         }
-      } else {
-        setIsLoading(false);
-        setError("No route data found in session storage");
       }
     }
-  }, [id])
+    
+    fetchData();
+  }, [id]);
   
-  console.log("map data", routeData)
   
   if (isLoading) {
     return <div className="p-8 flex justify-center">Loading route information...</div>
@@ -49,83 +50,92 @@ export default function Page() {
     return <div className="p-8">No route data available</div>
   }
   
-  // Parse the route_polyline if it's a string
+  // Ensure polyline data is in the correct format
   let polylineData;
   try {
-    polylineData = typeof routeData.route_polyline === 'string' 
-      ? JSON.parse(routeData.route_polyline) 
-      : routeData.route_polyline;
+    if (typeof routeData.route_polyline === 'string') {
+      // If the string starts with [ and ends with ], it's likely a JSON string
+      if (routeData.route_polyline.trim().startsWith('[') && routeData.route_polyline.trim().endsWith(']')) {
+        polylineData = JSON.parse(routeData.route_polyline);
+      } else {
+        // Handle other formats if needed (like encoded polylines)
+        console.warn("Polyline format not recognized");
+        polylineData = [];
+      }
+    } else {
+      // If it's already an array, use it directly
+      polylineData = routeData.route_polyline;
+    }
   } catch (err) {
     console.error("Failed to parse polyline:", err);
     polylineData = [];
   }
   
-  // Process the stops data correctly
-  const stops = [];
-
-  // Add the pickup/origin point
-  if (routeData.stops && Array.isArray(routeData.stops) && routeData.stops.length > 0) {
-    // Use the actual stops data if available
-    stops.push(...routeData.stops);
-  } else if (polylineData && polylineData.length > 0) {
-    // If no stops but we have polyline, create stops from first and last points
-    stops.push(
-      {
-        name: "Starting Point",
-        location: polylineData[0]
-      },
-      {
-        name: "Destination",
-        location: polylineData[polylineData.length - 1]
-      }
-    );
-  } else {
-    // Fallback using the route data structure from your example
-    if (routeData.stops && routeData.stops[0] && routeData.stops[0].coordinates) {
-      stops.push({
-        name: routeData.stops[0].location || "Pickup Point",
-        location: routeData.stops[0].coordinates
-      });
+  // Process stops data to match the expected format for MapView
+  let startLocation = null;
+  let endLocation = null;
+  let waypoints = [];
+  
+  // Function to normalize stops data
+  const processStops = () => {
+    // Case 1: If we have well-formed stops array
+    if (routeData.stops && Array.isArray(routeData.stops) && routeData.stops.length >= 2) {
+      // Create startLocation from first stop
+      const firstStop = routeData.stops[0];
+      startLocation = {
+        lat: firstStop.coordinates?.[1],
+        lng: firstStop.coordinates?.[0],
+        address: typeof firstStop.location === 'string' ? firstStop.location : "Starting Point"
+      };
+      
+      // Create endLocation from last stop
+      const lastStop = routeData.stops[routeData.stops.length - 1];
+      endLocation = {
+        lat: lastStop.coordinates?.[1],
+        lng: lastStop.coordinates?.[0],
+        address: typeof lastStop.location === 'string' ? lastStop.location : "Destination"
+      };
+      
+      // Create waypoints from middle stops
+      waypoints = routeData.stops.slice(1, -1).map((stop, index) => ({
+        id: stop.id || `wp-${index}`,
+        lat: stop.coordinates?.[1],
+        lng: stop.coordinates?.[0],
+        name: typeof stop.location === 'string' ? stop.location : `Waypoint ${index + 1}`,
+        type: stop.reason?.toLowerCase() || "custom"
+      }));
     }
-    
-    if (routeData.stops && routeData.stops[1] && routeData.stops[1].coordinates) {
-      stops.push({
-        name: routeData.stops[1].location || "Dropoff Point",
-        location: routeData.stops[1].coordinates
-      });
+    // Case 2: If we have polyline but no valid stops
+    else if (polylineData && polylineData.length >= 2) {
+      // Use first and last points of polyline
+      startLocation = {
+        lat: polylineData[0][1],
+        lng: polylineData[0][0],
+        address: "Starting Point"
+      };
+      
+      endLocation = {
+        lat: polylineData[polylineData.length - 1][1],
+        lng: polylineData[polylineData.length - 1][0],
+        address: "Destination"
+      };
     }
+  };
+  
+  // Process the stops
+  processStops();
+  
+  // Ensure we have the minimum required data
+  if (!startLocation || !endLocation) {
+    return <div className="p-8 text-red-500">Error: Invalid route data structure</div>
   }
   
-  // Ensure we have at least 2 stops
-  if (stops.length < 2 && polylineData && polylineData.length >= 2) {
-    stops.length = 0; // Reset stops if they're invalid
-    stops.push(
-      { name: "Starting Point", location: polylineData[0] },
-      { name: "Destination", location: polylineData[polylineData.length - 1] }
-    );
-  }
-  
-  // Prepare waypoints data from middle stops
-  const waypoints = stops.slice(1, -1).map((stop, index) => ({
-    id: `wp-${index}`,
-    lat: stop.location[1], // API returns [lng, lat], but MapView expects lat, lng
-    lng: stop.location[0],
-    name: stop.name || `Waypoint ${index + 1}`,
-    type: stop.type || "custom"
-  }));
-  
-  // Prepare start and end locations
-  const startLocation = stops.length > 0 ? {
-    lat: stops[0].location[1],
-    lng: stops[0].location[0],
-    address: stops[0].name || "Starting Point"
-  } : null;
-  
-  const endLocation = stops.length > 1 ? {
-    lat: stops[stops.length - 1].location[1],
-    lng: stops[stops.length - 1].location[0],
-    address: stops[stops.length - 1].name || "Destination"
-  } : null;
+  // Calculate duration in hours and minutes
+  const hours = Math.floor(routeData.duration / 60);
+  const minutes = Math.round(routeData.duration % 60);
+  const durationText = hours > 0 
+    ? `${hours}h ${minutes}m` 
+    : `${minutes} min`;
   
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -133,8 +143,7 @@ export default function Page() {
       
       <div className="mb-4">
         <div className="text-sm text-gray-500 mb-2">
-          Distance: {(routeData.distance / 1000).toFixed(2)} km •
-          Duration: {Math.floor(routeData.duration / 60)} min
+         
         </div>
       </div>
       
