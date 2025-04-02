@@ -1,0 +1,143 @@
+{
+    "id": 1,
+    "trip_id": 1,
+    "trip_title": "fast",
+    "distance": 262.5382454919408,
+    "duration": 5.32163888888889,
+    "route_polyline": "[[-74.034132, 40.619654], [-74.035431, 40.619966], [-74.035158, 40.620638], [-74.03487, 40.621327], [-74.034797, 40.621508], [-74.034595, 40.622001], [-74.034317, 40.62269], [-74.034043, 40.623363], [-74.033742, 40.624099], [-74.033389, 40.624968], [-76.199558, 43.044425], [-76.199839, 43.044428], [-76.199961, 43.044461], [-76.200047, 43.044507], [-76.200154, 43.04461], [-76.200546, 43.045083]]",
+    "stops": [
+        {
+            "location": "Pickup Point",
+            "reason": "Pickup",
+            "duration": 1,
+            "coordinates": [
+                -74.034132,
+                40.619654
+            ],
+            "elapsed_time": 0
+        },
+        {
+            "location": "Dropoff Point",
+            "reason": "Delivery",
+            "duration": 1,
+            "coordinates": [
+                -76.200546,
+                43.045083
+            ],
+            "elapsed_time": 6.32163888888889
+        }
+    ]
+}
+
+
+
+"use client"
+import { useEffect, useState } from "react"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { fetchWithAuth } from "@/lib/apiService"
+import { useAuth } from "@/contexts/AuthContext"
+import MapView from "@/components/map/mapview"
+
+export default function TripListView() {
+  const { getAccessToken } = useAuth()
+  const [trips, setTrips] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [selectedTrip, setSelectedTrip] = useState(null)
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        setLoading(true)
+        const rawResponse = await fetchWithAuth("/api/tracking/list", getAccessToken)
+        const data = Array.isArray(rawResponse) ? rawResponse : []
+        setTrips(data)
+      } catch (err) {
+        console.error("Failed to fetch trips:", err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTrips()
+  }, [])
+
+  console.log("trips", selectedTrip)
+
+  if (loading) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-t-primary rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600">Loading trips...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          {error}. Please try refreshing the page or check your connection.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  // If a trip is selected, render MapView instead of the trip list
+  if (selectedTrip) {
+    return (
+      <div className="container mx-auto p-4">
+        <button 
+          onClick={() => setSelectedTrip(null)} 
+          className="mb-4 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+        >
+          Back to Trips
+        </button>
+        <MapView 
+          tripId={selectedTrip.id}
+          startLocation={selectedTrip.pickup_location}
+          endLocation={selectedTrip.dropoff_location}
+          waypoints={selectedTrip.route?.waypoints || []}
+          routePolyline={selectedTrip.route?.polyline || null}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6" style={{ color: "#084152" }}>
+        Your Trips
+      </h1>
+      
+      {trips.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-medium text-gray-700">No trips found</h3>
+          <p className="text-gray-500 mt-2">Create a new trip to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trips.map(trip => (
+            <div 
+              key={trip.id} 
+              onClick={() => setSelectedTrip(trip)} 
+              className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-100 transition"
+            >
+              <h3 className="text-lg font-semibold">{trip.title}</h3>
+              <p className="text-sm text-gray-500">{trip.description}</p>
+              <p className="text-sm text-gray-700 mt-2">
+                From: {trip.pickup_location} → To: {trip.dropoff_location}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

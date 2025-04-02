@@ -1,0 +1,114 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "spotter",
+    "collectionId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+    "dateExported": "2025-04-01T04:06:09.160Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "e889c507-1e67-44b8-9fb1-8fa409217e0a",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "http://localhost:8000/api/routing/1",
+            "url": "http://localhost:8000/api/routing/2",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2025-04-01T04:04:06.252Z",
+            "modified": "2025-04-01T04:04:06.252Z",
+            "headers": []
+        },
+        {
+            "_id": "f9964eeb-36ae-4a7d-98b4-0c9b5b7a9ad5",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "http://localhost:8000/api/tracking/list",
+            "url": "http://localhost:8000/api/tracking/list",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2025-04-01T04:04:27.817Z",
+            "modified": "2025-04-01T04:04:27.817Z",
+            "headers": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNDM0NjE5LCJpYXQiOjE3NDM0MzQzMTksImp0aSI6IjcyODUxNWM1YTU2MzRmZjU4YjBjMWY4OTJlZDlkZmYxIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEifQ.vT1KdJeQvEcIB0REeV0vdywg26ipFs7ragOs8clDfnU"
+            }
+        },
+        {
+            "_id": "4078195f-8e3f-4061-a8f6-f3bee16489b1",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "http://localhost:8000/api/routing/1/generate",
+            "url": "http://localhost:8000/api/routing/7/generate/",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2025-04-01T04:04:37.853Z",
+            "modified": "2025-04-01T04:04:37.853Z",
+            "headers": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNDQ2Mzg5LCJpYXQiOjE3NDM0NDYwODksImp0aSI6IjgxZGE4ODlhYjc0YzRkMDVhYjc3ZWU1ZGFhNWFiYzk5IiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEifQ.Rh8p-Hsj1CGV7OJ9iHopeC1NWQ5cNWRBElg780CToxI"
+            }
+        },
+        {
+            "_id": "97dfe0a6-9a71-4b9c-8574-bb915f94ae06",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "http://localhost:8000/api/tracking/create",
+            "url": "http://localhost:8000/api/tracking/create/",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2025-04-01T04:04:49.748Z",
+            "modified": "2025-04-01T04:04:49.748Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "  {\"title\": \"Trip\",\n  \"description\": \"rfr\",\n  \"current_location\": \"Dallas, TX\",\n  \"current_coordinates\": \"40.800815980962575,-74.20166015625001\",\n  \"pickup_location\": \"Houston, TX\",\n  \"pickup_coordinates\": \n\"29.40499514696835,-98.48402559757233\",\n  \"dropoff_location\": \"Atlanta, GA\",\n  \"dropoff_coordinates\":\"32.70367473297053,-96.66691789299875\",\n  \"current_cycle_used\": 10.0,\n  \"status\": \"planned\",\n  \"startDate\": \"2025-03-31T08:39:19.790238Z\",\n  \"estimatedEndDate\":\"2025-03-31T07:47:18.415Z\",\n \n  \"driver\": 2\n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNDExMzQxLCJpYXQiOjE3NDM0MTEwNDEsImp0aSI6IjgxYTU1Y2JiZGM3NDRlYzZhMTllMTdjMTY0NGQzZGIxIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEifQ.xGD7J6c1vX8O2iLAESYB7adgVHTAnXwxcJnDwuRJYdw"
+            }
+        },
+        {
+            "_id": "c2433d81-b729-4620-b2a0-7850f959a7da",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "http://localhost:8000/api/auth/register",
+            "url": "http://localhost:8000/api/auth/register/",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2025-04-01T04:05:05.573Z",
+            "modified": "2025-04-01T04:05:05.573Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n           \"username\": \"testuser1\",\n           \"email\": \"testuser1@example.com\",\n           \"password\": \"SecurePassword123!\",\n           \"confirm_password\": \"SecurePassword123!\"\n         }",
+                "form": []
+            }
+        },
+        {
+            "_id": "a3358ac9-5f34-4896-8f5e-31a3fe8d4184",
+            "colId": "d6d80d43-9a0b-4b8a-9635-fc5724a180a0",
+            "containerId": "",
+            "name": "https://localhost:8000/api/auth/login",
+            "url": "http://localhost:8000/api/auth/login/",
+            "method": "POST",
+            "sortNum": 60000,
+            "created": "2025-04-01T04:05:14.633Z",
+            "modified": "2025-04-01T04:05:14.633Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "  {\n    \"username\": \"testuser1\",\n    \"email\": \"testuser1@example.com\",\n  \"password\": \"SecurePassword123!\"\n    \n  }",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQzNDM0NjA3LCJpYXQiOjE3NDM0MzQzMDcsImp0aSI6ImNhNzk3M2MyYTM0YTQ3YWI5MmM1YWRiOGYxNjdmZGExIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEifQ.hfiETkU_c_JqaKK82map-xGEfBlLh6qbF0JeIj0z4QY"
+            }
+        }
+    ],
+    "ref": "vhnsz51HcqvOC75-nYrD6JZSo0f1bKtCV9VYQqVA-QNj36KjzHawXTElIPpa0WLB1-sjqln5p4E6ws14To7aVw"
+}
