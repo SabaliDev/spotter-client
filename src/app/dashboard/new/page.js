@@ -183,8 +183,7 @@ export default function TripForm({ initialData }) {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" name="description" placeholder="Enter trip description" defaultValue={initialData?.description || ""} rows={3} />
               </div>
-              {/* ... rest of the form ... */}
-              {/* Current Location */}
+             
               <div className="space-y-2">
                 <Label htmlFor="currentLocation">Current Location</Label>
                 <div className="flex">
@@ -219,7 +218,7 @@ export default function TripForm({ initialData }) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Pickup Location */}
+              
                 <div className="space-y-2">
                   <Label htmlFor="pickupLocation">Pickup Location</Label>
                   <div className="flex">
@@ -245,7 +244,7 @@ export default function TripForm({ initialData }) {
                   </div>
                 </div>
 
-                {/* Dropoff Location */}
+                
                 <div className="space-y-2">
                   <Label htmlFor="dropoffLocation">Drop-off Location</Label>
                   <div className="flex">
@@ -272,7 +271,7 @@ export default function TripForm({ initialData }) {
                 </div>
               </div>
 
-              {/* Current Cycle Used */}
+              
               <div className="space-y-2">
                 <Label htmlFor="currentCycleUsed">Current Cycle Used (Hours)</Label>
                 <Input
@@ -327,7 +326,7 @@ export default function TripForm({ initialData }) {
         </CardFooter>
       </Card>
 
-      {/* Map Selection Dialog */}
+   
       <Dialog open={mapDialogOpen} onOpenChange={setMapDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

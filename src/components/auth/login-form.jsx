@@ -54,7 +54,7 @@ export function LoginForm() {
     <div className="flex flex-col min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="mb-8 flex items-center space-x-2">
         <TruckIcon className="w-10 h-10" style={{ color: "#084152" }} />
-        <h1 className="text-3xl font-bold" style={{ color: "#084152" }}>TruckTrack</h1>
+        <h1 className="text-3xl font-bold" style={{ color: "#084152" }}>Spotter</h1>
       </div>
     
       <Card className="w-full max-w-md">

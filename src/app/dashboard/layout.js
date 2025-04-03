@@ -36,10 +36,9 @@ const Sidebar = ({ activePath = "/dashboard" }) => {
   const navItems = [
     { icon: Home, href: "/dashboard", label: "Dashboard" },
     { icon: TruckIcon, href: "/dashboard/trips", label: "My Trips" },
-    { icon: MapPin, href: "/locations", label: "Locations" },
-    { icon: ClipboardList, href: "/logs", label: "Daily Logs" },
-    { icon: User, href: "/profile", label: "Profile" },
-    { icon: Settings, href: "/settings", label: "Settings" },
+    { icon: ClipboardList, href: "/dashboard/triplog", label: "Daily Logs" },
+    { icon: User, href: "/dashboard/profile", label: "Profile" },
+
   ];
 
   return (
@@ -47,7 +46,7 @@ const Sidebar = ({ activePath = "/dashboard" }) => {
       <div className="p-6">
         <div className="flex items-center space-x-2">
           <TruckIcon className="w-8 h-8 text-white" />
-          <h2 className="text-xl font-bold text-white">TruckTrack</h2>
+          <h2 className="text-xl font-bold text-white">Spotter</h2>
         </div>
       </div>
       
