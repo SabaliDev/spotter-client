@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, MapPin, Navigation, LocateFixed, Truck, Fuel, Coffee, Flag } from "lucide-react"
 import 'leaflet/dist/leaflet.css';
 
+//deploy-comment
+
 export default function MapView({
   tripId,
   startLocation,
