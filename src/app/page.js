@@ -23,7 +23,7 @@ export default function LandingPage() {
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <TruckIcon className="w-8 h-8" style={{ color: "#084152" }} />
-            <h1 className="text-2xl font-bold" style={{ color: "#084152" }}>TruckTrack</h1>
+            <h1 className="text-2xl font-bold" style={{ color: "#084152" }}>Spotter</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/login">
@@ -44,10 +44,10 @@ export default function LandingPage() {
         <section className="py-20">
           <div className="container mx-auto text-center px-4">
             <h2 className="text-4xl font-bold mb-6" style={{ color: "#084152" }}>
-              Track Your Deliveries with Ease
+              Track with Ease
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-600">
-              Manage your fleet, optimize routes, and keep logs of all your deliveries in one place with TruckTrack.
+              Manage your fleet, optimize routes, and keep logs of all your trips in one place with Spotter.
             </p>
             <Link href="/register">
               <Button size="lg" className="px-8" style={{ backgroundColor: "#F94961" }}>
@@ -66,7 +66,7 @@ export default function LandingPage() {
               <div className="bg-white p-6 rounded-lg shadow-md">
                
                 <h4 className="text-xl font-semibold mb-2">Trip Management</h4>
-                <p className="text-gray-600">Keep track of all your deliveries and routes in one central dashboard.</p>
+                <p className="text-gray-600">Keep track of all your trips and routes in one central dashboard.</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
             
@@ -88,17 +88,11 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <TruckIcon className="w-6 h-6" />
-              <span className="text-lg font-semibold">TruckTrack</span>
+              <span className="text-lg font-semibold">Spotter</span>
             </div>
-            <div className="flex space-x-6">
-              <Link href="/about" className="hover:underline">About</Link>
-              <Link href="/features" className="hover:underline">Features</Link>
-              <Link href="/pricing" className="hover:underline">Pricing</Link>
-              <Link href="/contact" className="hover:underline">Contact</Link>
-            </div>
+
           </div>
           <div className="mt-8 text-center text-gray-400">
-            <p>© 2025 TruckTrack. All rights reserved.</p>
           </div>
         </div>
       </footer>

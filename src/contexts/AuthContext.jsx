@@ -4,17 +4,16 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
-
-// Helper to safely access localStorage (only in browser)
 const getStoredToken = (key) => {
+  
   if (typeof window !== "undefined") {
     return localStorage.getItem(key);
   }
   return null;
 };
 
-// Base API fetch function
 const apiFetch = async (url, options = {}) => {
+  
   const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL;
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_DJANGO_API_URL is not defined in your environment.");
@@ -22,253 +21,262 @@ const apiFetch = async (url, options = {}) => {
 
   const fullUrl = `${baseUrl}${url}`;
   const response = await fetch(fullUrl, options);
-  
+
   if (!response.ok) {
     let errorData = null;
     try {
       errorData = await response.json();
     } catch(e) {
-      errorData = {detail: `HTTP error! status: ${response.status}`};
+      const textError = await response.text();
+      errorData = {detail: textError || `HTTP error! status: ${response.status}`};
     }
-    throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
+     const error = new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
+     error.status = response.status; 
+     error.data = errorData; 
+     throw error;
   }
-  
-  return response;
+
+  const contentType = response.headers.get("content-type");
+  if (response.status !== 204 && contentType && contentType.includes("application/json")) {
+      return response.json(); 
+  } else if (response.status === 204) {
+      return null;
+  } else {
+      return response;
+  }
 };
+
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(getStoredToken('accessToken'));
-  const [refreshToken, setRefreshToken] = useState(getStoredToken('refreshToken'));
-  const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+  const [accessToken, setAccessToken] = useState(() => getStoredToken('accessToken')); 
+  const [refreshToken, setRefreshToken] = useState(() => getStoredToken('refreshToken')); 
+  const [loading, setLoading] = useState(true); 
+  const [initialized, setInitialized] = useState(false); 
   const router = useRouter();
 
-  // Function to refresh the access token using refresh token
-  const refreshAccessToken = useCallback(async () => {
-    if (!refreshToken) return null;
-    
+  const handleLogout = useCallback(() => {
+    setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+
+    }
+  }, [/* router */]);
+
+
+  const refreshAccessTokenInternal = useCallback(async () => {
+    const currentRefreshToken = refreshToken;
+    if (!currentRefreshToken) {
+        return null; 
+    }
+
     try {
-      console.log("Attempting to refresh token");
-      const response = await apiFetch("/api/auth/refresh/", {
+      const data = await apiFetch("/api/auth/refresh/", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken }),
+        body: JSON.stringify({ refresh: currentRefreshToken }),
       });
-      
-      const data = await response.json();
-      if (data.access) {
-        console.log("Token refreshed successfully");
-        setAccessToken(data.access);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("accessToken", data.access);
-          // Update cookie as well
-          document.cookie = `authToken=${data.access}; path=/; max-age=3600; SameSite=Strict`;
-        }
-        return data.access;
-      }
-      return null;
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      // If refresh fails, log the user out
-      handleLogout();
-      return null;
-    }
-  }, [refreshToken]);
 
-  // Fetch user profile with the given token
-  const fetchUserProfile = useCallback(async (token) => {
-    if (!token) {
-      setUser(null);
-      return;
+      if (data && data.access) {
+        const newAccessToken = data.access;
+        setAccessToken(newAccessToken); 
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", newAccessToken);
+        }
+        return newAccessToken; 
+      } else {
+         handleLogout();
+         throw new Error("Failed to refresh token: Invalid response data.");
+      }
+    } catch (error) {
+       handleLogout();
+       throw new Error(`Token refresh failed: ${error.message || 'Unknown error'}`);
     }
-    
+  }, [refreshToken, handleLogout]);
+
+
+  const fetchUserProfile = useCallback(async (tokenToUse) => {
+    if (!tokenToUse) {
+      setUser(null); 
+      return null;
+    }
+
     try {
-      console.log("Fetching user profile with token");
-      const response = await apiFetch("/api/auth/me/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      const userData = await response.json();
-      setUser(userData);
+       const userData = await apiFetch("/api/auth/me/", { 
+         headers: {
+           Authorization: `Bearer ${tokenToUse}`,
+         },
+       });
+
+      setUser(userData); 
       return userData;
     } catch (error) {
-      console.error("Error fetching user profile:", error);
       setUser(null);
-      return null;
+      throw error; 
     }
   }, []);
 
-// Update your handleLogout function
-const handleLogout = useCallback(() => {
-  setUser(null);
-  setAccessToken(null);
-  setRefreshToken(null);
-  
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    
-    // Clear cookie - try multiple approaches
-    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    
-    // Also try with domain
-    const domain = window.location.hostname;
-    document.cookie = `authToken=; path=/; domain=${domain}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-    
-    // Also try with different combinations of flags
-    // In your logout handler
-document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-    
-    console.log("All cookies after multiple clearing attempts:", document.cookie);
-  }
-}, []);
 
-  // Initialize auth state on component mount
   useEffect(() => {
     const initializeAuth = async () => {
-      setLoading(true);
-      
-      const storedAccessToken = getStoredToken('accessToken');
-      const storedRefreshToken = getStoredToken('refreshToken');
-      
-      console.log("Initializing auth:", !!storedAccessToken, !!storedRefreshToken);
-      
-      if (storedAccessToken && storedRefreshToken) {
-        setAccessToken(storedAccessToken);
-        setRefreshToken(storedRefreshToken);
-        
+      setLoading(true); 
+
+
+      if (accessToken) {
         try {
-          // Try to fetch user profile with stored token
-          const userData = await fetchUserProfile(storedAccessToken);
-          if (!userData) {
-            // If that fails, try refreshing the token
-            const newToken = await refreshAccessToken();
-            if (newToken) {
-              await fetchUserProfile(newToken);
-            }
-          }
+          await fetchUserProfile(accessToken);
         } catch (error) {
-          console.error("Error during auth initialization:", error);
-          handleLogout();
+          if (error.status === 401 && refreshToken) { 
+            try {
+              const newToken = await refreshAccessTokenInternal();
+              if (newToken) {
+                await fetchUserProfile(newToken); 
+              } else {
+              }
+            } catch (refreshError) {
+            }
+          } else if (!refreshToken) {
+             handleLogout();
+          } else {
+             handleLogout(); 
+          }
+        }
+      } else if (refreshToken) {
+        try {
+          const newToken = await refreshAccessTokenInternal();
+          if (newToken) {
+            await fetchUserProfile(newToken);
+          } else {
+          }
+        } catch (refreshError) {
         }
       } else {
-        // Clear any partial state if no valid tokens
-        handleLogout();
+        handleLogout(); 
       }
-      
-      setLoading(false);
-      setInitialized(true);
+
+      setLoading(false); 
+      setInitialized(true); 
     };
-    
-    initializeAuth();
-  }, [fetchUserProfile, refreshAccessToken, handleLogout]);
+
+    if (!initialized) {
+        initializeAuth();
+    } else {
+        setLoading(false); 
+    }
+  }, [initialized]); 
+
 
   const login = async (username, password) => {
+    setLoading(true); 
     try {
-        console.log("Attempting login");
-        const response = await apiFetch("/api/auth/login/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-        });
+      console.log("Attempting login via AuthContext");
+       const tokens = await apiFetch("/api/auth/login/", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ username, password }),
+       });
 
-        const tokens = await response.json();
 
-        if (tokens.access && tokens.refresh) {
-            console.log("Login successful, setting tokens");
-            setAccessToken(tokens.access);
-            setRefreshToken(tokens.refresh);
+      if (tokens && tokens.access && tokens.refresh) {
+        const newAccessToken = tokens.access;
+        const newRefreshToken = tokens.refresh;
 
-            if (typeof window !== "undefined") {
-                localStorage.setItem("accessToken", tokens.access);
-                localStorage.setItem("refreshToken", tokens.refresh);
+        setAccessToken(newAccessToken);
+        setRefreshToken(newRefreshToken);
 
-                // Set the cookie *before* redirection
-                document.cookie = `authToken=${tokens.access}; path=/; max-age=3600; SameSite=Strict`;
-
-                // Get callbackUrl if available
-                const params = new URLSearchParams(window.location.search);
-                const callbackUrl = params.get("callbackUrl") || "/dashboard";
-
-                // *Then* redirect
-                router.push(callbackUrl);
-            }
-
-            await fetchUserProfile(tokens.access);
-
-            return true;
-        } else {
-            throw new Error("Login response did not contain expected tokens.");
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", newAccessToken);
+          localStorage.setItem("refreshToken", newRefreshToken);
         }
+
+        await fetchUserProfile(newAccessToken);
+
+        setLoading(false);
+        return true; 
+      } else {
+        throw new Error("Login response did not contain expected tokens.");
+      }
     } catch (error) {
-        console.error("Login error:", error);
-        throw error;
+      handleLogout(); 
+      setLoading(false); 
+      throw error; 
     }
-};
-  
+  };
 
 
-  const register = async (name, username, password,confirm_password) => {
+  const register = async (name, username, password, confirm_password) => {
+    const email = username;
     try {
-      const response = await apiFetch("/api/auth/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, username, password,confirm_password }),
-      });
-      
-      return await response.json();
+       console.log("Attempting registration via AuthContext");
+       const response = await apiFetch("/api/auth/register/", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ name, username, email, password, password2: confirm_password }),
+       });
+      return response; 
     } catch (error) {
-      console.error("Registration error:", error);
       throw error;
     }
   };
 
-  const logout = useCallback(() => {
-    handleLogout();
-    router.push("/");
-  }, [router, handleLogout]);
 
-  // Function to get the current access token with potential refresh
+  const logout = useCallback(() => {
+    handleLogout(); 
+    router.push("/");
+  }, [handleLogout, router]);
+
+
   const getAccessToken = useCallback(async () => {
-    // If not initialized yet, wait a bit
+    let waitCount = 0;
+    while (!initialized && loading && waitCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
+    }
+
     if (!initialized && loading) {
-      console.log("Auth not initialized yet, waiting...");
-      // Wait for initialization to complete with a small timeout
-      await new Promise(resolve => setTimeout(resolve, 100));
+        throw new Error("Authentication context did not initialize in time.");
     }
-    
-    // If we don't have an access token or refresh token, return null
-    if (!accessToken && !refreshToken) {
-      console.log("No tokens available");
-      return null;
-    }
-    
-    // If we have an access token, return it
     if (accessToken) {
-      console.log("Returning existing access token");
       return accessToken;
     }
-    
-    // If we only have a refresh token, try to refresh
-    console.log("No access token, attempting refresh");
-    return await refreshAccessToken();
-  }, [accessToken, refreshToken, refreshAccessToken, initialized, loading]);
+
+
+    if (refreshToken) {
+      try {
+        const newToken = await refreshAccessTokenInternal();
+        if (newToken) {
+           return newToken;
+        } else {
+           return null; 
+        }
+      } catch (error) {
+         return null; 
+      }
+    }
+
+    return null;
+  }, [initialized, loading, accessToken, refreshToken, refreshAccessTokenInternal]); 
+
+
 
   const value = {
     user,
-    loading,
+    loading: loading || !initialized, // 
+    isAuthenticated: !!user && !!accessToken,
     login,
     register,
     logout,
-    isAuthenticated: !!user && !!accessToken,
     getAccessToken,
-    // Expose these for debugging if needed
-    accessToken,
-    refreshToken
+    refreshAccessToken: refreshAccessTokenInternal,
   };
+
 
   return (
     <AuthContext.Provider value={value}>
@@ -276,5 +284,6 @@ document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Sa
     </AuthContext.Provider>
   );
 }
+
 
 export const useAuth = () => useContext(AuthContext);
