@@ -18,7 +18,13 @@ import { fetchWithAuth } from "@/lib/apiService"
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function TripForm({ initialData }) {
-  const { getAccessToken } = useAuth();
+  const {
+    getAccessToken,
+    refreshAccessToken,
+    logout,
+    loading: authLoading,
+  } = useAuth();
+
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -128,24 +134,20 @@ export default function TripForm({ initialData }) {
     }
   
     try {
-      const token = await getAccessToken();
-      console.log("Token available before request:", !!token);
-
-
-      const endpoint = isEditing
-        ? `/api/trips/${initialData.id}`
-        : `${process.env.NEXT_PUBLIC_DJANGO_API_URL}/api/tracking/create/`;
+      const token = await getAccessToken()
 
        
       const apiEndpoint = `${process.env.NEXT_PUBLIC_DJANGO_API_URL}/api/tracking/create/`
   
-      const method ="POST";
-  
       const response = await fetchWithAuth(
         apiEndpoint,
         getAccessToken,
+        async () => {
+          const newToken = await refreshAccessToken() 
+        },
+        logout,
         {
-        method: method,
+        method:"POST",
         body: JSON.stringify(tripData),
       });
 

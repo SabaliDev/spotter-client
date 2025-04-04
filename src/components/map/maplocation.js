@@ -269,24 +269,24 @@ export default function MapLocationPicker({
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
             />
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                {searchResults.map((result, index) => (
-                  <div
-                    key={index}
-                    className="p-2 hover:bg-gray-100 cursor-pointer border-b text-sm"
-                    onClick={() => selectSearchResult(result)}
-                  >
-                    {result.display_name}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
           <Button onClick={searchLocation} disabled={isSearching} variant="secondary">
             {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </div>
+        {searchResults.length > 0 && (
+          <div className="z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+            {searchResults.map((result, index) => (
+              <div
+                key={index}
+                className="p-2 hover:bg-gray-100 cursor-pointer border-b text-sm"
+                onClick={() => selectSearchResult(result)}
+              >
+                {result.display_name}
+              </div>
+            ))}
+          </div>
+        )}
         
         {error && (
           <Alert variant="destructive">
