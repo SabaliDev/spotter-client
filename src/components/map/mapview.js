@@ -295,32 +295,7 @@ export default function MapView({
         <div className="flex justify-between items-center">
           <CardTitle>Trip Map</CardTitle>
           <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={getCurrentLocation}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <LocateFixed className="h-4 w-4 mr-1" />
-              )}
-              Locate Me
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={toggleTracking}
-              style={{
-                backgroundColor: isTracking ? '#F94961' : 'transparent',
-                color: isTracking ? 'white' : 'currentColor',
-                borderColor: isTracking ? '#F94961' : 'currentColor'
-              }}
-            >
-              <Navigation className="h-4 w-4 mr-1" />
-              {isTracking ? 'Stop Tracking' : 'Start Tracking'}
-            </Button>
+          
           </div>
         </div>
       </CardHeader>
