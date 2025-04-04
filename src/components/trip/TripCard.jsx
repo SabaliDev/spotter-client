@@ -212,7 +212,6 @@ export default function TripCard({
             </CardContent>
 
             <CardFooter className="pt-3 pb-2 gap-2 border-t bg-gray-50/50">
-                <ActionButton href={`/dashboard/logs?tripId=${trip?.id}`} icon={FileTextIcon} label="Logs" size="sm"/>
                 <Button onClick={handleMapNavigation} variant="default" size="sm" className="flex-1">
                     <PenToolIcon className="h-4 w-4 mr-1" />Map Route
                 </Button>

@@ -217,7 +217,7 @@ export default function Page() {
             ? `${routeData.distance.toFixed(1)} miles`
             : "N/A"}
         </p>
-        <p className="text-sm text-gray-600">Est. Duration: {durationText}</p>
+    
       </div>
 
       <MapView
