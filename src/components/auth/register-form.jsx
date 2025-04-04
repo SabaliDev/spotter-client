@@ -23,7 +23,7 @@ export function RegisterForm() {
     setError("")
     
     const formData = new FormData(event.currentTarget)
-    const name = formData.get("name")
+    const user_name = formData.get("name")
     const email = formData.get("email")
     const password = formData.get("password")
     const confirmPassword = formData.get("confirmPassword")
@@ -37,7 +37,7 @@ export function RegisterForm() {
     
     try {
       let confirm_password = confirmPassword
-      await register(name, email, password,confirm_password)
+      await register(user_name, email, password,confirm_password)
       router.push("/login?registered=true")
     } catch (error) {
       setError(error instanceof Error ? error.message : "Registration failed")

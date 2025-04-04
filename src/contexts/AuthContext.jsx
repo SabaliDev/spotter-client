@@ -211,14 +211,14 @@ export function AuthProvider({ children }) {
   };
 
 
-  const register = async (name, username, password, confirm_password) => {
-    const email = username;
+  const register = async (username,email, password, confirm_password) => {
+    
     try {
        console.log("Attempting registration via AuthContext");
        const response = await apiFetch("/api/auth/register/", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ name, username, email, password, password2: confirm_password }),
+         body: JSON.stringify({ username, email, password,  confirm_password }),
        });
       return response; 
     } catch (error) {
